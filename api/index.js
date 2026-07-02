@@ -5,12 +5,9 @@ const path = require('path');
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
 
-// প্রাইভেট বটের সিকিউরিটি (মাল্টিপল এডমিন)
+// প্রাইভেট বটের সিকিউরিটি
 bot.use((ctx, next) => {
-    // এখানে আপনার দেওয়া দুটি আইডি লিস্ট আকারে যুক্ত করা হলো
     const adminIds = ['7414830213', '6972909646']; 
-    
-    // চেক করা হচ্ছে মেসেজ পাঠানো ব্যক্তির আইডি লিস্টে আছে কিনা
     if (ctx.from && adminIds.includes(ctx.from.id.toString())) {
         return next(); 
     } else {
@@ -18,25 +15,25 @@ bot.use((ctx, next) => {
     }
 });
 
-// টেলিগ্রাম বটের লজিক
-bot.start((ctx) => ctx.reply('স্বাগতম বস! আমাকে যেকোনো ইমেজের ডিরেক্ট লিঙ্ক দিন। আমি সেটিকে ওয়াটারমার্কযুক্ত ফাস্ট সিডিএন লিঙ্কে কনভার্ট করে দেবো।'));
+bot.start((ctx) => ctx.reply('স্বাগতম বস! আমাকে যেকোনো ইমেজের ডিরেক্ট লিঙ্ক দিন।'));
 
 bot.on('text', async (ctx) => {
     const text = ctx.message.text.trim();
     
     if (text.startsWith('http://') || text.startsWith('https://')) {
-        const host = ctx.headers ? ctx.headers.host : 'your-vercel-domain'; 
+        // এখানে আপনার কাস্টম ডোমেইন সরাসরি বসিয়ে দেওয়া হয়েছে
+        const host = 'bot.rnexflix.top'; 
         const protocol = 'https';
         
         const cdnUrl = `${protocol}://${host}/api?url=${encodeURIComponent(text)}`;
         
-        ctx.reply(`✅ আপনার অপ্টিমাইজড লিঙ্ক প্রস্তুত:\n\n${cdnUrl}`);
+        // এখানে কোড ব্লক ব্যবহার করা হয়েছে যাতে সহজে কপি করা যায়
+        ctx.reply(`✅ আপনার অপ্টিমাইজড লিঙ্ক প্রস্তুত:\n\n\`${cdnUrl}\`\n\nলিঙ্কটির ওপর ট্যাপ করে কপি করে নিন।`, { parse_mode: 'Markdown' });
     } else {
         ctx.reply('দয়া করে একটি সঠিক ইমেজ ইউআরএল (URL) পাঠান।');
     }
 });
 
-// Vercel-এর মেইন হ্যান্ডলার
 module.exports = async (req, res) => {
     const { url } = req.query;
 
@@ -54,22 +51,19 @@ module.exports = async (req, res) => {
             res.setHeader('Content-Type', 'image/webp');
             return res.send(processedImage);
         } catch (error) {
-            return res.status(500).send('ইমেজ প্রসেস করতে সমস্যা হয়েছে। লিঙ্কটি সঠিক কিনা চেক করুন।');
+            return res.status(500).send('ইমেজ প্রসেস করতে সমস্যা হয়েছে।');
         }
     }
 
     if (req.method === 'POST') {
         try {
             await bot.handleUpdate(req.body, res);
-            if (!res.headersSent) {
-                res.status(200).send('OK');
-            }
+            if (!res.headersSent) res.status(200).send('OK');
         } catch (err) {
-            console.error(err);
             res.status(500).send('Error');
         }
     } else {
         res.status(200).send('Bot is running securely...');
     }
 };
-              
+                
