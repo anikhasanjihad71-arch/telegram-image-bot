@@ -1,0 +1,9 @@
+{
+  "name": "telegram-image-bot",
+  "version": "1.0.0",
+  "dependencies": {
+    "axios": "^1.6.0",
+    "sharp": "^0.32.6",
+    "telegraf": "^4.15.0"
+  }
+}
